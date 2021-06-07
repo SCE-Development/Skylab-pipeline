@@ -1,14 +1,58 @@
--- Create source table
+-- Create Source table
 create table Source (
-	SourceID int,
+	SourceID int not null auto_increment,
     SourceRepo varchar(255),
     SourcePage varchar(255),
-    SourceEndpoint varchar(255)
+    SourceEndpoint varchar(255),
+    primary key(SourceID)
 );
 
--- Add a sample entry into source
+-- Create Event table
+create table Event (
+	EventID int not null auto_increment,
+    EventSource int,
+    EventDate DATE,
+    EventTS TIMESTAMP,
+    EventDescription varchar(1000),
+    EventError boolean,
+    ATTR_1 varchar(255),
+    ATTR_2 varchar(255),
+    ATTR_3 varchar(255),
+    ATTR_4 varchar(255),
+    ATTR_5 varchar(255),
+    ATTR_JSON nvarchar(4000),
+    primary key(EventID),
+    foreign key(EventSource) references Source(SourceID)
+    on update cascade on delete cascade
+);
+
+-- Add sample data
 INSERT into Source (
-	SourceID, SourceRepo, SourcePage, SourceEndpoint
+	SourceRepo, SourcePage, SourceEndpoint
 ) VALUES (
-	1, "Core-v4", "S3", "/s3"
+    "Core-v4", "S3", "/s3"
+);
+
+INSERT into Event (
+    EventSource,
+    EventDate,
+    EventTS,
+    EventDescription,
+    EventError,
+    ATTR_1,
+    ATTR_2,
+    ATTR_3,
+    ATTR_4,
+    ATTR_5
+) VALUES (
+	1,
+    '2021-04-19',
+    null,
+    "Core-v4 S3 adding habib.png to sample bucket",
+    False,
+    "Sample bucket",
+    "12345",
+    "habib.png",
+    null,
+    null
 );
