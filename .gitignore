@@ -1,0 +1,11 @@
+# node modules
+node_modules/
+
+# typescript compiled files
+dist/
+
+# Environment variables
+constants.json
+
+# vscode files
+.vscode/

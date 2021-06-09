@@ -1,0 +1,6 @@
+{
+    "RDShostName": "hostname",
+    "RDSuser": "user",
+    "RDSpassword": "password",
+    "RDSport": "port"
+}
