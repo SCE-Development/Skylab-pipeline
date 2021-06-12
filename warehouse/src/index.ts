@@ -5,6 +5,8 @@ const {
   RDSpassword,
   RDSport
 } = require("./config/constants.json");
+
+
 function connectDatabase() {
   const con = mysql.createConnection({
     host: RDShostname,
@@ -22,6 +24,10 @@ function connectDatabase() {
     console.log("Connected to database.");
   });
   con.end();
+}
+
+function connectServer() {
+  
 }
 
 connectDatabase();
