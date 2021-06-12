@@ -27,7 +27,8 @@ function connectDatabase() {
 }
 
 function connectServer() {
-  
+
 }
+
 
 connectDatabase();
