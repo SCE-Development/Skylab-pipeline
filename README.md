@@ -7,7 +7,7 @@ This is the data pipeline for SCE. It consists of the RDS data warehouse and its
 
 1. Download MySQL Workbench from [here](https://dev.mysql.com/downloads/workbench/)
 2. See [here](https://aws.amazon.com/premiumsupport/knowledge-center/rds-connect-ec2-bastion-host/)
-and scroll down to the section on Connecting from your local machine
+and scroll down to the section on **Connect to the RDS DB instance from your local machine**
 3. Credentials are provided by Jerry. Message shadowclaw#6023 on discord
 
 ## Development process
