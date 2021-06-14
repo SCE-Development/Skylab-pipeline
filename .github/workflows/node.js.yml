@@ -20,11 +20,12 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - run: cd warehouse
-    - name: Install dependencies
-      run: npm ci
-    - name: Run linter
-      # path: ~/warehouse
-      run: npm run lint
+    # - name: Install dependencies
+    #   run: npm ci
+    - name: Setup and run linter
+      working-directory: ./warehouse
+      run: |
+        npm ci
+        npm run lint
     # - run: npm run build --if-present
     # - run: npm test
