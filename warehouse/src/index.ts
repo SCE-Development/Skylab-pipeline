@@ -1,10 +1,13 @@
-const mysql = require("mysql");
-const {
+import mysql from "mysql";
+import express from "express";
+import cors from "cors";
+import {
   RDShostname,
   RDSuser,
   RDSpassword,
-  RDSport
-} = require("./config/constants.json");
+  RDSport,
+  Expressport
+} from "./config/constants.json";
 
 
 function connectDatabase() {
@@ -15,20 +18,27 @@ function connectDatabase() {
     port: RDSport,
   });
 
-  con.connect(function (err: any) {
+  con.connect(function (err: Error) {
     if (err) {
+      // eslint-disable-next-line
       console.error("Database connection failed: " + err.stack);
       return;
     }
-
+    // eslint-disable-next-line
     console.log("Connected to database.");
   });
   con.end();
 }
 
 function connectServer() {
-
+  const app = express();
+  app.use(cors());
+  app.listen(Expressport, () => 
+    // eslint-disable-next-line
+    console.log(`Server started at port ${Expressport}`)
+  );
 }
 
 
 connectDatabase();
+connectServer();

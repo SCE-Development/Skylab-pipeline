@@ -4,19 +4,26 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "nodemon dist/index.js",
-    "build:dev": "tsc --watch --preserveWatchOutput",
-    "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\""
+    "build:dev": "tsc --watch --preserveWatchOutput --resolveJsonModule",
+    "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\"",
+    "lint": "eslint . --ext .ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "mysql": "^2.18.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.10",
     "@types/express": "^4.17.12",
+    "@types/mysql": "^2.15.18",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
     "concurrently": "^6.2.0",
+    "eslint": "^7.28.0",
     "nodemon": "^2.0.7"
   },
   "description": ""
