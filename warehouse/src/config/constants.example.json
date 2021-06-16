@@ -2,5 +2,6 @@
     "RDShostName": "hostname",
     "RDSuser": "user",
     "RDSpassword": "password",
-    "RDSport": "port"
+    "RDSport": "port",
+    "Expressport": 8000
 }

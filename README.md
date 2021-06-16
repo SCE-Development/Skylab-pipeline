@@ -19,7 +19,8 @@ and scroll down to the section on **Connect to the RDS DB instance from your loc
 #### Steps
 1. `Git clone https://github.com/SCE-Development/Skylab-pipeline.git`
 1. `cd` into `warehouse/` and type `npm install` to install dependencies
-1. Copy `config.example.json` to `config.json` and fill out necessary info
+1. Copy `warehouse/src/config/constants.example.json` to 
+`warehouse/src/config/constants.json` and fill out necessary info
 1. `npm run dev` to connect to the database and start server
 
 ### AWS Architecture
