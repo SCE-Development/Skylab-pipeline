@@ -10,8 +10,8 @@ import {
 } from "./config/constants.json";
 
 
-function connectDatabase(): void {
-  const con = mysql.createConnection({
+function connectDatabase(): mysql.Connection {
+   const con = mysql.createConnection({
     host: RDShostname,
     user: RDSuser,
     password: RDSpassword,
@@ -28,12 +28,14 @@ function connectDatabase(): void {
     console.log("Connected to database.");
   });
   con.end();
-  return;
+  return con;
 }
 
 function connectServer(): void {
   const app = express();
   app.use(cors());
+  const healthCheckFile = require("./routes/healthcheck")
+  app.use(healthCheckFile)
   app.listen(Expressport, () => 
     // eslint-disable-next-line
     console.log(`Server started at port ${Expressport}`)
@@ -41,6 +43,5 @@ function connectServer(): void {
   return;
 }
 
-
-connectDatabase();
+export const CONNECTION = connectDatabase();
 connectServer();
