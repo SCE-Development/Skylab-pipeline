@@ -9,3 +9,6 @@ constants.json
 
 # vscode files
 .vscode/
+
+#.DS_Store
+.DS_Store
