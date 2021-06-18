@@ -27,7 +27,7 @@ function connectDatabase(): mysql.Connection {
     // eslint-disable-next-line
     console.log("Connected to database.");
   });
-  con.end();
+  //con.end();
   return con;
 }
 
@@ -42,6 +42,5 @@ function connectServer(): void {
   );
   return;
 }
-
 export const CONNECTION = connectDatabase();
 connectServer();
