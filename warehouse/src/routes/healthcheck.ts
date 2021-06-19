@@ -1,24 +1,32 @@
-//import { CONNECTION } from "..";
+import { CONNECTION } from "..";
 
 const express = require('express');
 const router = express.Router();
 
-//UNFINISHED METHOD
+/*
+    Checks if connection is healthy
+    @return boolean true if healthy and false if not
+*/
 function rdsHealthCheck(): boolean {
-    //const sql = 'select * from sys.Event';
-    
-    //const result = CONNECTION.query(sql);
-    //console.log(result);
-    
-    return false;
+    if(CONNECTION.state == "disconnected" || CONNECTION == null)
+    {
+        return false;
+    }
+    return true;
 }
 
 /* creates API endpoint to test on at localhost:8000/healthcheck */
 // eslint-disable-next-line
-router.get('/healthcheck', (req: any, res: any) => {
-   
-    rdsHealthCheck();
-    res.status(200).send();
-})
+router.get('/healthCheck', (req: any, res: any) => {
+    const healthy = rdsHealthCheck();
+    if (healthy)
+    {
+        res.status(200).send();
+    }
+    else
+    {
+        res.status(503).send();
+    }      
+});
 
 module.exports = router;
