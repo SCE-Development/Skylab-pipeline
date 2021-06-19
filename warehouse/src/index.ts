@@ -1,47 +1,24 @@
-import mysql from "mysql";
-import express from "express";
-import cors from "cors";
+import { DatabaseConnection } from "./utils/DB";
+import { ExpressServer } from "./utils/Server";
+// import DatabaseConnection from "./utils/DB";
+// import ExpressServer from "./utils/Server";
 import {
-  RDShostname,
-  RDSuser,
-  RDSpassword,
-  RDSport,
-  Expressport
+  RDS_HOST_NAME,
+  RDS_USER,
+  RDS_PASSWORD,
+  RDS_PORT,
+  SERVER_PORT,
 } from "./config/constants.json";
 
-  function connectDatabase(): mysql.Connection {
-    const con = mysql.createConnection({
-      host: RDShostname,
-      user: RDSuser,
-      password: RDSpassword,
-      port: RDSport,
-    });
+const connectionProperties = {
+  host: RDS_HOST_NAME,
+  user: RDS_USER,
+  password: RDS_PASSWORD,
+  port: RDS_PORT,
+};
 
-    con.connect(function (err: Error) {
-      if (err) {
-        // eslint-disable-next-line
-        console.error("Database connection failed: " + err.stack);
-        return;
-      }
-      // eslint-disable-next-line
-      console.log("Connected to database.");
-    });
-    con.destroy();
-    //con.end();
-    return con;
-  }
+const DB = new DatabaseConnection(connectionProperties);
+const SERVER = new ExpressServer(__dirname + '/routes/', SERVER_PORT);
+SERVER.initializeEndpoints();
 
-  function connectServer(): express.Application {
-    const app = express();
-    app.use(cors());
-    const healthCheckFile = require("./routes/healthcheck")
-    app.use(healthCheckFile)
-    app.listen(Expressport, () => 
-      // eslint-disable-next-line
-      console.log(`Server started at port ${Expressport}`)
-    );
-    return app;
-  }
-
-export const APP = connectServer();
-export const CONNECTION = connectDatabase();
+module.exports = { DB, SERVER }

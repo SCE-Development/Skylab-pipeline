@@ -1,4 +1,4 @@
-import { CONNECTION } from "..";
+const { DB } = require("../index");
 
 const express = require('express');
 const router = express.Router();
@@ -8,11 +8,11 @@ const router = express.Router();
     @return boolean true if healthy and false if not
 */
 function rdsHealthCheck(): boolean {
-    if(CONNECTION.state == "disconnected" || CONNECTION == null)
+    if(DB && DB.connection && DB.connection.state == "authenticated")
     {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 /* creates API endpoint to test on at localhost:8000/healthcheck */
