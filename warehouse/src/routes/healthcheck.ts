@@ -8,17 +8,8 @@ const router = express.Router();
     @return boolean true if healthy and false if not
 */
 function rdsHealthCheck(): boolean {
-    const sqlQuery = 'select * from sys.Event';
-    if (CONNECTION.state == "disconnected") {
-        return false;
-    }
-    try {
-        CONNECTION.query(sqlQuery, function (error, results, fields) {
-            if (error != null) { 
-                return false;
-            }
-        });
-    } catch (e: unknown) {
+    if(CONNECTION.state == "disconnected" || CONNECTION == null)
+    {
         return false;
     }
     return true;
@@ -26,9 +17,16 @@ function rdsHealthCheck(): boolean {
 
 /* creates API endpoint to test on at localhost:8000/healthcheck */
 // eslint-disable-next-line
-router.get('/healthcheck', (req: any, res: any) => {
-    res.send(rdsHealthCheck());
-    res.status(200).send();
-})
+router.get('/healthCheck', (req: any, res: any) => {
+    const healthy = rdsHealthCheck();
+    if (healthy)
+    {
+        res.status(200).send();
+    }
+    else
+    {
+        res.status(503).send();
+    }      
+});
 
 module.exports = router;
