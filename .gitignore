@@ -12,3 +12,6 @@ constants.json
 
 #.DS_Store
 .DS_Store
+
+# Javascript files
+*.js

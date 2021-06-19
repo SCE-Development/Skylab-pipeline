@@ -1,50 +1,48 @@
 import { expect } from "chai";
 import { agent as request } from "supertest";
+import { ExpressServer } from "../src/utils/Server";
+import { DatabaseConnection } from "../src/utils/DB";
 import sinon from "sinon";
-import { ExpressServer } from '../src/utils/Server';
-import { DatabaseConnection } from '../src/utils/DB';
 
-
-// const app = new ExpressServer(__dirname + '/../src/routes/', 8000);
-// app.initializeEndpoints();
-let app: any = null;
+// let connection: any = null;
+let app: ExpressServer;
 const sandbox = sinon.createSandbox();
 
 describe("Health Check testing", () => {
+  let connectionStub: sinon.SinonStub<[], Promise<boolean>>;
+  let healthCheckStub: sinon.SinonStub<[], boolean>;
+  let closeConnectionStub: sinon.SinonStub<[done?: any], void>;
+  before((done) => {
+    connectionStub = sandbox.stub(DatabaseConnection.prototype, "connect");
+    healthCheckStub = sandbox.stub(DatabaseConnection.prototype, "healthCheck");
+    closeConnectionStub = sandbox.stub(DatabaseConnection.prototype, "close");
+    app = new ExpressServer(__dirname + "/../src/routes/", 8000);
+    app.initializeEndpoints();
+    app.connectServer();
+    done();
+  });
+  after((done) => {
+    if (connectionStub) connectionStub.restore();
+    if (healthCheckStub) healthCheckStub.restore();
+    if (closeConnectionStub) closeConnectionStub.restore();
+    sandbox.restore();
+    app.closeConnection(done);
+  });
   describe("/GET successful healthcheck", () => {
-    let dbStub = null;
-    before((done) => {
-      app = new ExpressServer(__dirname + '/../src/routes/', 8000);
-      app.initializeEndpoints();
-      done();
-    })
     it("Should always succeed", async () => {
-      const res = await request((app as ExpressServer).app)
-        .get('/healthCheck');
+      await connectionStub.resolves(true);
+      healthCheckStub.returns(true);
+      const res = await request(app.app).get("/healthCheck");
       expect(res.status).to.equal(200);
     });
-    after((done) => {
-      (app as ExpressServer).closeServer();
-      
-      done();
-    })
   });
 
-  // describe("/GET failed healthcheck", () => {
-  //   // before((done) => {
-  //   //   sinon.stub();
-  //   //   app = new ExpressServer(__dirname + '/../src/routes/', 8000);
-  //   //   app.initializeEndpoints();
-  //   //   done();
-  //   // })
-  //   it("Should always fail", async () => {
-  //     const res = await request((app as ExpressServer).app)
-  //       .get('/healthCheck');
-  //     expect(res.status).to.equal(503);
-  //   });
-  //   // after((done) => {
-  //   //   (app as ExpressServer).closeServer()
-  //   //   done()
-  //   // })
-  // });
+  describe("/GET failed healthcheck", () => {
+    it("Should always fail", async () => {
+      await connectionStub.resolves(true);
+      healthCheckStub.returns(false);
+      const res = await request(app.app).get("/healthCheck");
+      expect(res.status).to.equal(503);
+    });
+  });
 });

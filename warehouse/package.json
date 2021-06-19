@@ -7,8 +7,7 @@
     "build:dev": "tsc --watch --preserveWatchOutput",
     "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\"",
     "lint": "eslint . --ext .ts",
-    "test-dev": "nodemon --watch . --ext ts --exec \"mocha -r ts-node/register test/**/*.test.ts\"",
-    "test": "mocha -r ts-node/register test/**/*.test.ts"
+    "test": "mocha -r ts-node/register test/**/*.test.ts --exit"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +15,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "http": "^0.0.1-security",
     "mysql": "^2.18.1"
   },
   "devDependencies": {

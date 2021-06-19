@@ -1,31 +1,16 @@
-const { DB } = require("../connection");
-const express = require('express');
+import express from 'express';
+import { DatabaseConnection } from '../utils/DB'
 const router = express.Router();
 
-/*
-    Checks if connection is healthy
-    @return boolean true if healthy and false if not
-*/
-function rdsHealthCheck(): boolean {
-    if(DB && DB.connection && DB.connection.state == "authenticated")
-    {
-        return true;
-    }
-    return false;
-}
 
 /* creates API endpoint to test on at localhost:8000/healthcheck */
 // eslint-disable-next-line
-router.get('/healthCheck', (req: any, res: any) => {
-    const healthy = rdsHealthCheck();
-    if (healthy)
-    {
-        res.status(200).send();
-    }
-    else
-    {
-        res.status(503).send();
-    }      
+router.get('/healthCheck', async (req: any, res: any) => {
+    const DB = new DatabaseConnection();
+    await DB.connect();
+    const status = DB.healthCheck() ? 200 : 503;
+    DB.close();
+    res.sendStatus(status).send();
 });
 
 module.exports = router;
