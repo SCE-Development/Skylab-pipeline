@@ -1,5 +1,4 @@
-const { DB } = require("../index");
-
+const { DB } = require("../connection");
 const express = require('express');
 const router = express.Router();
 

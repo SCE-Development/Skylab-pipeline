@@ -35,6 +35,10 @@ export class DatabaseConnection {
     });
     return connection;
   }
+
+  disconnect(): void {
+    this.connection.end();
+  }
 }
 
 module.exports = { DatabaseConnection };

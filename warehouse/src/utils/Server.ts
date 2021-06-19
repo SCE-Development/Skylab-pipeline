@@ -10,6 +10,7 @@ export class ExpressServer {
   pathToEndpoints: string;
   port: number;
   app: Express.Application;
+  server: any;
 
   /**
    * 
@@ -21,6 +22,7 @@ export class ExpressServer {
     this.pathToEndpoints = pathToEndpoints;
     this.port = port;
     this.app = this._connectServer();
+    this.server = null;
   }
 
   /**
@@ -30,7 +32,7 @@ export class ExpressServer {
   _connectServer(): Express.Application {
     const app = express();
     app.use(cors());
-    app.listen(this.port, () =>
+    this.server = app.listen(this.port, () =>
       // eslint-disable-next-line
       console.log(`Server started at port ${this.port}`)
     );
@@ -45,11 +47,18 @@ export class ExpressServer {
       files.forEach(file => {
         const route = this.pathToEndpoints + file;
         // Typecast this to any to resolve TS2339
-        (this.app as any).use(require(route));
+        (this.app as any).use(route);
       })
     })
   }
+
+  /**
+   * Stop server
+   */
+  closeServer(): void {
+    // Typecast this to any to resolve TS2339
+    this.server.close();
+  }
 }
 
-exports = {ExpressServer}
 module.exports = { ExpressServer };

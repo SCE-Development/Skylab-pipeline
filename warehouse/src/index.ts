@@ -1,7 +1,5 @@
 import { DatabaseConnection } from "./utils/DB";
 import { ExpressServer } from "./utils/Server";
-// import DatabaseConnection from "./utils/DB";
-// import ExpressServer from "./utils/Server";
 import {
   RDS_HOST_NAME,
   RDS_USER,
