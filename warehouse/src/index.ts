@@ -31,10 +31,6 @@ import {
     return con;
   }
 
-  function closeDatabase(): void {
-    CONNECTION.end();
-  }
-
   function connectServer(): express.Application {
     const app = express();
     app.use(cors());
@@ -45,10 +41,6 @@ import {
       console.log(`Server started at port ${Expressport}`)
     );
     return app;
-  }
-
-  function closeServer(): void {
-
   }
 
 export const APP = connectServer();
