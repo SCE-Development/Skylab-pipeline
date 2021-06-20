@@ -1,5 +1,5 @@
 import express from "express";
-import cors, { CorsRequest } from "cors";
+import cors from "cors";
 import fs from "fs";
 import http from "http";
 import { DatabaseConnection } from "./DB";
