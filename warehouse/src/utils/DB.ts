@@ -46,9 +46,9 @@ export class DatabaseConnection {
           resolve(false);
         } else {
           // eslint-disable-next-line
-          console.log(
-            `Connected to database on port ${this.connectionProperties.port}`
-          );
+          // console.log(
+          //   `Connected to database on port ${this.connectionProperties.port}`
+          // );
           resolve(true);
         }
       });
@@ -70,7 +70,7 @@ export class DatabaseConnection {
    */
   close(done?: any): void {
     // eslint-disable-next-line
-    console.log(`DB Connection closed`);
+    // console.log(`DB Connection closed`);
     (this.connection as mysql.Connection).end(done)
   }
 }
