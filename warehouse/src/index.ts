@@ -9,6 +9,7 @@ import {
   Expressport
 } from "./config/constants.json";
 
+
   function connectDatabase(): mysql.Connection {
     const con = mysql.createConnection({
       host: RDShostname,
@@ -26,29 +27,22 @@ import {
       // eslint-disable-next-line
       console.log("Connected to database.");
     });
-    con.destroy();
     //con.end();
     return con;
-  }
-
-  function closeDatabase(): void {
-    CONNECTION.end();
   }
 
   function connectServer(): express.Application {
     const app = express();
     app.use(cors());
     const healthCheckFile = require("./routes/healthcheck")
-    app.use(healthCheckFile)
+    const pageVisitsFile = require("./routes/pageVisits")
+    app.use(healthCheckFile);
+    app.use(pageVisitsFile);
     app.listen(Expressport, () => 
       // eslint-disable-next-line
       console.log(`Server started at port ${Expressport}`)
     );
     return app;
-  }
-
-  function closeServer(): void {
-
   }
 
 export const APP = connectServer();
