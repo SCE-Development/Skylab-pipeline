@@ -35,7 +35,7 @@ export class ExpressServer {
     this.app.use(
       express.json({
         // support JSON-encoded request bodies
-        limit: '50mb',
+        limit: "50mb",
         strict: true,
       })
     );
@@ -61,10 +61,6 @@ export class ExpressServer {
     fs.readdir(this.pathToEndpoints, (err, files) => {
       files.forEach((file) => {
         const route = this.pathToEndpoints + file;
-<<<<<<< HEAD
-        //console.log("ROUTE: " + route);
-=======
->>>>>>> master
         this.app.use(require(route));
       });
     });

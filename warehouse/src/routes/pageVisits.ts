@@ -1,5 +1,5 @@
-const express = require('express');
-import { DatabaseConnection } from '../utils/DB'
+import express from 'express';
+import { DatabaseConnection } from '../utils/DB';
 const router = express.Router();
 const CONNECTION = new DatabaseConnection();
 
@@ -10,12 +10,11 @@ const CONNECTION = new DatabaseConnection();
 */
 const recordPageVisits = function(pages: string[]) {
     return new Promise(function(resolve, reject) {
-        const sqlQuery = `SELECT sys.Source.SourcePage, count(sys.Event.EventSource) AS count 
-                          FROM sys.Event JOIN sys.Source ON sys.Event.EventSource = sys.Source.SourceID
-                          WHERE sys.Source.SourcePage 
+        const sqlQuery = `SELECT Source.SourcePage, count(Event.EventSource) AS count 
+                          FROM Event JOIN Source ON Event.EventSource = sys.Source.SourceID
+                          WHERE Source.SourcePage 
                           IN (?) 
-                          GROUP BY sys.Source.SourcePage;`
-        ;
+                          GROUP BY Source.SourcePage;`;
         (CONNECTION.connection)!.query(sqlQuery, [pages], function (error: any, results:any) {
             if (error != null || results === undefined) { 
                 reject(error);  
