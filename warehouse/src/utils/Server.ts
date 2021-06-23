@@ -61,7 +61,10 @@ export class ExpressServer {
     fs.readdir(this.pathToEndpoints, (err, files) => {
       files.forEach((file) => {
         const route = this.pathToEndpoints + file;
+<<<<<<< HEAD
         //console.log("ROUTE: " + route);
+=======
+>>>>>>> master
         this.app.use(require(route));
       });
     });

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 {
   "compilerOptions": {
@@ -15,3 +16,21 @@
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "exclude": ["node_modules"]
 }
+=======
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+>>>>>>> master

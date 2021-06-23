@@ -1,4 +1,4 @@
-import mysql, { ConnectionConfig } from "mysql";
+import mysql from "mysql";
 
 import {
   RDS_HOST_NAME,
