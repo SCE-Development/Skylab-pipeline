@@ -1,97 +1,112 @@
-import { CONNECTION } from "..";
-
 const express = require('express');
+import { DatabaseConnection } from '../utils/DB'
 const router = express.Router();
+const CONNECTION = new DatabaseConnection();
 
-const recordPageVisits = function(page: string) {
+/*
+    Queries for amount of page visits per page
+    Params: string array of pages
+    Return: page visits per page
+*/
+const recordPageVisits = function(pages: string[]) {
     return new Promise(function(resolve, reject) {
-        const sqlQuery = `SELECT count(*) as count FROM sys.Source WHERE sys.Source.SourcePage = ?`;
-
-        CONNECTION.query(sqlQuery, page, function (error, results) {
+        const sqlQuery = `SELECT sys.Source.SourcePage, count(sys.Event.EventSource) AS count 
+                          FROM sys.Event JOIN sys.Source ON sys.Event.EventSource = sys.Source.SourceID
+                          WHERE sys.Source.SourcePage 
+                          IN (?) 
+                          GROUP BY sys.Source.SourcePage;`
+        ;
+        (CONNECTION.connection)!.query(sqlQuery, [pages], function (error: any, results:any) {
             if (error != null || results === undefined) { 
-                reject(error)
+                reject(error);  
             }
-            console.log("results:" + results[0].count);
-            resolve(results[0].count);
+
+            var pageVisitsMap = new Map();
+            
+            //stores the results in a map
+            for (const result of results) {
+                pageVisitsMap.set(result.SourcePage, result.count); 
+            }
+            
+            //checks for pages which weren't returned in results and adds them to map with default value of 0
+            for (const page of pages) {
+                if (!pageVisitsMap.has(page))
+                {
+                    pageVisitsMap.set(page, 0);
+                }
+            }
+            resolve(pageVisitsMap); 
         });
     });  
 }    
 
-async function queryDB(sqlQuery: string, sqlParam: string) {
-    CONNECTION.query(sqlQuery, sqlParam, function (error, results, fields) {
-        if (error != null) { 
-            throw error;
-        }
-        console.log(results[0].count);
-        //pageVisits = results[0].count;
-        return results;
-    });
-}
+/*
+    Queries for all the existing distinct pages
+    Return: all existing distinct pages 
+*/
+const getAllDistinctPages = function() {
+    return new Promise(function(resolve, reject) {
+        const sqlQuery = `SELECT DISTINCT sys.Source.SourcePage AS pagename FROM sys.Source;`;
+        (CONNECTION.connection)!.query(sqlQuery, function (error: any, results:any) {
+            if (error != null || results === undefined) { 
+                reject(error);  
+            }
+        
+            const pages = results.map(page => page.pagename);
+            resolve(pages); 
+        });
+    });  
+} 
 
-//stub database 
-function stubDatabaseWithPageVisits(): void {
-    //stubbed data
-    const page1 = "Event Page";
-    const page2 = "Event Page";
-    const page3 = "Event Page";
-    const page4 = "Home Page";
-    const page5 = "Home Page";
-    const pages = [page1, page2, page3, page4, page5];
-    const sqlQuery = `INSERT INTO sys.Source (sys.Source.SourcePage) 
-                      VALUES(?), (?), (?), (?), (?)`;
+/* 
+    creates a post API endpoint to test on at /pageVisits
+    params: page    page to get page visits for
+    return: page visits
+*/
+router.post('/pageVisits', async (req: any, res: any) => {
 
-    try {
-        CONNECTION.query(sqlQuery, pages, function (error, results, fields) {
-        if (error != null) { 
-            throw error;
-        }
-    });
-    } catch (e: unknown) {
-        console.log("Error");
+    //unpack JSON into string array of pages 
+    let {
+        pages
+    }  = req.body;
+
+    await CONNECTION!.connect();
+
+    //check if req.body exists, else make default parameters all the pages
+    if (pages === undefined) {
+        pages = await getAllDistinctPages();    
+    }   
+    //test for bad input types(number, boolean, etc.), test for wrong page nam  e
+    else if (!stringArrayCheck(pages))     
+    {
+        res.status(503).send(
+            "Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
+        );
         return;
     }
-}
-
-//delete stubdata method after recordpagevisits
-function deStubDatabaseWithPageVisits(): void {
-    //stubbed data
-    const sqlQuery = `DELETE FROM sys.Source WHERE
-                      sys.Source.SourceID > 2`;
-
-    try {
-    CONNECTION.query(sqlQuery, function (error, results, fields) {
-        if (error != null) { 
-            throw error;
-        }
-    });
-    } catch (e: unknown) {
-        console.log("Error");
-        return;
-    }
-}
-
-router.get ('/pageVisits', async (req: any, res: any) => {
-    //stubDatabaseWithPageVisits();
-    var pageVisits = 0;
-    await recordPageVisits("Event Page")
+    
+    //stores results in a map
+    let pageVisitsMap = new Map<string, number>();
+    pageVisitsMap = await recordPageVisits(pages)
     .then(function(results) {
-        pageVisits = results as number;
-        console.log(pageVisits);
+        return results as Map<string, number>;
     })
     .catch(function(error) {
-        console.log("Promise rejection error: "+error);
+        return res.status(503).send("Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables.");    
     });
 
-    console.log("pgvisits:" + pageVisits);
-    if (pageVisits > 0)
-    {
-        res.status(200).send();
-    }
-    else 
-    {
-        res.status(503).send(); 
-    }
-    //deStubDatabaseWithPageVisits();
-    console.log("pagevisits:" + pageVisits);
+    res.status(200).send(JSON.stringify(Array.from(pageVisitsMap.entries())));
+
+    CONNECTION.close();
 });
-module.exports = router;    //why do i need to do this?
+
+/*
+    Helper function, checks if all elements in array are strings
+    param: array
+    return: boolean, if array includes a non string
+*/
+function stringArrayCheck(pages) {
+    return pages.every(page => (typeof page === "string"));
+}
+
+module.exports = router;    

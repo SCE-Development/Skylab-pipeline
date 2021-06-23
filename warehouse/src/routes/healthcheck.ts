@@ -15,7 +15,10 @@ function rdsHealthCheck(): boolean {
     return true;
 }
 
-/* creates API endpoint to test on at localhost:8000/healthcheck */
+/* 
+    creates API endpoint to test at /healthcheck 
+    return: whether connection is healthy
+*/
 // eslint-disable-next-line
 router.get('/healthCheck', (req: any, res: any) => {
     const healthy = rdsHealthCheck();
