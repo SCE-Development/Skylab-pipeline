@@ -8,7 +8,7 @@ const CONNECTION = new DatabaseConnection();
     Params: string array of pages
     Return: page visits per page
 */
-const recordPageVisits = function(pages: string[]) {
+const recordPageVisits = function(pages: string[]): Promise<Map<string, number>> {
     return new Promise(function(resolve, reject) {
         const sqlQuery = `SELECT Source.SourcePage, count(Event.EventSource) AS count 
                           FROM Event JOIN Source ON Event.EventSource = sys.Source.SourceID
@@ -51,7 +51,7 @@ const getAllDistinctPages = function(): Promise<void> {
                 reject(error);  
             }
         
-            const pages = results.map((page: { pagename: any; }) => page.pagename);
+            const pages = results.map((page: any) => page.pagename);
             resolve(pages); 
         });
     });  
@@ -85,14 +85,13 @@ router.post('/pageVisits', async (req, res) => {
     }
     
     //stores results in a map
-    let pageVisitsMap = await recordPageVisits(pages)
+    const pageVisitsMap = (await recordPageVisits(pages)
     .then(function(results) {
         return results as Map<string, number>;
     })
     .catch(function(error) {
         return res.status(503).send("Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables.");    
-    });
-    pageVisitsMap = pageVisitsMap as Map<string, number>;
+    })) as Map<string, number>;
 
     CONNECTION.close();
 
