@@ -20,7 +20,7 @@ const recordPageVisits = function(pages: string[]): Promise<Map<string, number>>
                 reject(error);  
             }
 
-            let pageVisitsMap = new Map();
+            const pageVisitsMap = new Map();
             
             //stores the results in a map
             for (const result of results) {
