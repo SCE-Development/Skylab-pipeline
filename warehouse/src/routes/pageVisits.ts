@@ -15,12 +15,12 @@ const recordPageVisits = function(pages: string[]) {
                           WHERE Source.SourcePage 
                           IN (?) 
                           GROUP BY Source.SourcePage;`;
-        (CONNECTION.connection)!.query(sqlQuery, [pages], function (error: any, results:any) {
+        (CONNECTION.connection)?.query(sqlQuery, [pages], function (error, results) {
             if (error != null || results === undefined) { 
                 reject(error);  
             }
 
-            var pageVisitsMap = new Map();
+            let pageVisitsMap = new Map();
             
             //stores the results in a map
             for (const result of results) {
@@ -43,15 +43,15 @@ const recordPageVisits = function(pages: string[]) {
     Queries for all the existing distinct pages
     Return: all existing distinct pages 
 */
-const getAllDistinctPages = function() {
+const getAllDistinctPages = function(): Promise<void> {
     return new Promise(function(resolve, reject) {
         const sqlQuery = `SELECT DISTINCT sys.Source.SourcePage AS pagename FROM sys.Source;`;
-        (CONNECTION.connection)!.query(sqlQuery, function (error: any, results:any) {
+        (CONNECTION.connection)?.query(sqlQuery, function (error, results) {
             if (error != null || results === undefined) { 
                 reject(error);  
             }
         
-            const pages = results.map(page => page.pagename);
+            const pages = results.map((page: { pagename: any; }) => page.pagename);
             resolve(pages); 
         });
     });  
@@ -62,14 +62,14 @@ const getAllDistinctPages = function() {
     params: page    page to get page visits for
     return: page visits
 */
-router.post('/pageVisits', async (req: any, res: any) => {
+router.post('/pageVisits', async (req, res) => {
 
     //unpack JSON into string array of pages 
     let {
         pages
     }  = req.body;
 
-    await CONNECTION!.connect();
+    await CONNECTION?.connect();
 
     //check if req.body exists, else make default parameters all the pages
     if (pages === undefined) {
@@ -85,18 +85,18 @@ router.post('/pageVisits', async (req: any, res: any) => {
     }
     
     //stores results in a map
-    let pageVisitsMap = new Map<string, number>();
-    pageVisitsMap = await recordPageVisits(pages)
+    let pageVisitsMap = await recordPageVisits(pages)
     .then(function(results) {
         return results as Map<string, number>;
     })
     .catch(function(error) {
         return res.status(503).send("Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables.");    
     });
-
-    res.status(200).send(JSON.stringify(Array.from(pageVisitsMap.entries())));
+    pageVisitsMap = pageVisitsMap as Map<string, number>;
 
     CONNECTION.close();
+
+    return res.status(200).send(JSON.stringify(Array.from(pageVisitsMap.entries())));
 });
 
 /*
@@ -104,7 +104,7 @@ router.post('/pageVisits', async (req: any, res: any) => {
     param: array
     return: boolean, if array includes a non string
 */
-function stringArrayCheck(pages) {
+function stringArrayCheck(pages: string[]): boolean {
     return pages.every(page => (typeof page === "string"));
 }
 

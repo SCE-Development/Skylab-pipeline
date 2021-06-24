@@ -36,7 +36,7 @@ export class ExpressServer {
       express.json({
         // support JSON-encoded request bodies
         limit: "50mb",
-        strict: true,
+        strict: true
       })
     );
   }
