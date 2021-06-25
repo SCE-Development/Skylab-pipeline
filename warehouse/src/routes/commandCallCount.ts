@@ -21,9 +21,7 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
 
     command = db.connection?.escape(command) || '';
 
-    console.log(command);
-
-    let sql: string = 
+    const sql = 
         `
         SELECT 
             COUNT(*) AS callCount

@@ -25,7 +25,7 @@ INSERT INTO Event (
 );
 
 SELECT 
-    COUNT(*)
+    COUNT(*) AS callCount
 FROM 
     Event
 WHERE (
