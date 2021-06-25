@@ -36,7 +36,7 @@ export class ExpressServer {
       express.json({
         // support JSON-encoded request bodies
         limit: "50mb",
-        strict: true
+        strict: true,
       })
     );
   }
@@ -75,7 +75,7 @@ export class ExpressServer {
     this.server.close();
     if (this.connection) {
       (this.connection as DatabaseConnection).close(done);
-    } else{
+    } else {
       done();
     }
   }
