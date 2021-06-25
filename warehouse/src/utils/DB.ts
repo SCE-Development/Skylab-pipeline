@@ -1,10 +1,11 @@
-import mysql from "mysql";
+import mysql, { Types } from "mysql";
 import { resolve } from "path/posix";
 import {
   RDS_HOST_NAME,
   RDS_USER,
   RDS_PASSWORD,
   RDS_PORT,
+  DATABASE
 } from "../config/constants.json";
 
 const DEFAULT_CONNECTION = {
@@ -12,6 +13,7 @@ const DEFAULT_CONNECTION = {
   user: RDS_USER,
   password: RDS_PASSWORD,
   port: RDS_PORT,
+  database: DATABASE
 };
 
 /**
@@ -72,6 +74,17 @@ export class DatabaseConnection {
     // eslint-disable-next-line
     // console.log(`DB Connection closed`);
     (this.connection as mysql.Connection).end(done)
+  }
+  
+  query(sql: string) {
+    return new Promise((resolve, reject) => {
+      this.connection?.query(sql, (err, results) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(results);
+      });
+    });
   }
 }
 
