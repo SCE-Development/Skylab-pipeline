@@ -3,6 +3,36 @@ import { DatabaseConnection } from "../utils/DB";
 const router = express.Router();
 const CONNECTION = new DatabaseConnection();
 
+const loginDistinct = function (date: string): Promise<void> {
+  return new Promise(function (resolve, reject) {
+    const distinctSqlSelect = `select EventDate, count(distinct userID) AS distinctSqlCount FROM Event WHERE (EventDate = '2021-04-19' AND EventSource = 21 AND ATTR_1 = 'Successful');`;
+    CONNECTION.connection?.query(distinctSqlSelect, function (error, results) {
+      if (error != null || results === undefined) {
+        reject(error);
+      }
+
+      const rows = results as any;
+      const distinctCount = rows[0].distinctSqlCount;
+      resolve(distinctCount);
+    });
+  });
+};
+
+const loginTotal = function (date: string): Promise<void> {
+  return new Promise(function (resolve, reject) {
+    const totalSqlSelect = `select EventDate, count(userID) AS totalSqlCount from Event WHERE (EventDate = '2021-04-19' AND EventSource = 21 AND ATTR_1 = 'Successful');`;
+    CONNECTION.connection?.query(totalSqlSelect, function (error, results) {
+      if (error != null || results === undefined) {
+        reject(error);
+      }
+
+      const rows = results as any;
+      const totalCount = rows[0].totalSqlCount;
+      resolve(totalCount);
+    });
+  });
+};
+
 router.get("/logintraffic", async (req: any, res: any) => {
   await CONNECTION.connect();
   const date = "2021-04-2019";
@@ -28,35 +58,5 @@ router.get("/logintraffic", async (req: any, res: any) => {
 
   CONNECTION.close();
 });
-
-const loginDistinct = function (date: String): Promise<void> {
-  return new Promise(function (resolve, reject) {
-    const distinctSqlSelect = `select EventDate, count(distinct userID) AS distinctSqlCount FROM Event WHERE (EventDate = '2021-04-19' AND EventSource = 21 AND ATTR_1 = 'Successful');`;
-    CONNECTION.connection?.query(distinctSqlSelect, function (error, results) {
-      if (error != null || results === undefined) {
-        reject(error);
-      }
-
-      const rows = results as any;
-      const distinctCount = rows[0].distinctSqlCount;
-      resolve(distinctCount);
-    });
-  });
-};
-
-const loginTotal = function (date: String): Promise<void> {
-  return new Promise(function (resolve, reject) {
-    const totalSqlSelect = `select EventDate, count(userID) AS totalSqlCount from Event WHERE (EventDate = '2021-04-19' AND EventSource = 21 AND ATTR_1 = 'Successful');`;
-    CONNECTION.connection?.query(totalSqlSelect, function (error, results) {
-      if (error != null || results === undefined) {
-        reject(error);
-      }
-
-      const rows = results as any;
-      const totalCount = rows[0].totalSqlCount;
-      resolve(totalCount);
-    });
-  });
-};
 
 module.exports = router;
