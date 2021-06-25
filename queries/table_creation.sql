@@ -61,4 +61,3 @@ INSERT into Event (
 ALTER TABLE Event
 ADD COLUMN UserID varchar(255) AFTER EventSource,
 ADD COLUMN SSOID varchar(255) AFTER EventSource;
-
