@@ -21,7 +21,7 @@ router.get("/logintraffic", async (req: any, res: any) => {
   await CONNECTION.connect();
   const date = "2021-04-19";
 
-  const distinctLogins = await loginTraffic(date)
+  const logins = await loginTraffic(date)
     .then(function (results) {
       res.json({
         Date: date,
