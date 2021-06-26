@@ -56,9 +56,7 @@ const getAllDistinctPages = function(dates: string[]): Promise<void> {
             if (error != null || results === undefined) { 
                 reject(error);  
             }
-            console.log(dates[0])
-            console.log(dates[1])
-            console.log(results);
+
             const pages = results.map((page: any) => page.pagename);
             resolve(pages); 
         });
@@ -80,7 +78,7 @@ function stringArrayCheck(pages: string[]): boolean {
     @returns: boolean, if array includes a non string
 */
 function checkDate(date: Date): boolean {
-    return !(date.toString() === "Invalid Date") && (date.getTime() != NaN) && !(isNaN(date.valueOf()));
+    return !(date.toString() === "Invalid Date") && !(isNaN(date.getTime())) && !(isNaN(date.valueOf()));
 }
 
 /* 
@@ -95,7 +93,7 @@ router.get('/pageVisits', async (req, res) => {
         pages
     }  = req.body;
     
-    let {
+    const {
         start_date, end_date
     } = req.body;
     
@@ -104,9 +102,9 @@ router.get('/pageVisits', async (req, res) => {
 
     let betweenDates: [string, string] = ["", ""];
 
-    //check if date parameters were given
+    //check if date parameters were given else give default parameters
     if (start_date === undefined || end_date === undefined) {
-        var today = new Date();
+        let today = new Date();
         betweenDates[1] = today.toISOString().split('T')[0];
 
         today.setMonth(today.getMonth() - 3);
