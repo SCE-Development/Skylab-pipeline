@@ -3,53 +3,34 @@ import { DatabaseConnection } from "../utils/DB";
 const router = express.Router();
 const CONNECTION = new DatabaseConnection();
 
-const loginDistinct = function (date: string): Promise<void> {
+const loginTraffic = function (date: string): Promise<void> {
   return new Promise(function (resolve, reject) {
-    const distinctSqlSelect = `select EventDate, count(distinct userID) AS distinctSqlCount FROM Event WHERE (EventDate = '2021-04-19' AND EventSource = 21 AND ATTR_1 = 'Successful');`;
-    CONNECTION.connection?.query(distinctSqlSelect, function (error, results) {
+    const sqlSelect = `select count(distinct userID) AS distinctSqlCount, count(userID) AS totalSqlCount FROM Event WHERE (EventDate = '${date}'AND EventSource = 21 AND ATTR_1 = "Successful");`;
+    CONNECTION.connection?.query(sqlSelect, function (error, results) {
       if (error != null || results === undefined) {
         reject(error);
       }
-
       const rows = results as any;
-      const distinctCount = rows[0].distinctSqlCount;
+      const distinctCount = rows;
       resolve(distinctCount);
-    });
-  });
-};
-
-const loginTotal = function (date: string): Promise<void> {
-  return new Promise(function (resolve, reject) {
-    const totalSqlSelect = `select EventDate, count(userID) AS totalSqlCount from Event WHERE (EventDate = '2021-04-19' AND EventSource = 21 AND ATTR_1 = 'Successful');`;
-    CONNECTION.connection?.query(totalSqlSelect, function (error, results) {
-      if (error != null || results === undefined) {
-        reject(error);
-      }
-
-      const rows = results as any;
-      const totalCount = rows[0].totalSqlCount;
-      resolve(totalCount);
     });
   });
 };
 
 router.get("/logintraffic", async (req: any, res: any) => {
   await CONNECTION.connect();
-  const date = "2021-04-2019";
+  const date = "2021-04-19";
 
-  const distinctLogins = await loginDistinct(date).then(function (results) {
-    res.json({
-      Date: date,
-      "Distinct Logins": results,
+  const distinctLogins = await loginTraffic(date)
+    .then(function (results) {
+      res.json({
+        Date: date,
+        "Login Traffic": results,
+      });
+    })
+    .catch(function (error) {
+      return res.status(503).send("Error querying database.");
     });
-  });
-
-  const totalLogins = await loginTotal("2021-04-19").then(function (results) {
-    res.json({
-      Date: date,
-      "Total Logins": results,
-    });
-  });
 
   res.status(200).send();
   if (req.query === undefined) {
