@@ -104,7 +104,7 @@ router.get('/pageVisits', async (req, res) => {
 
     //check if date parameters were given else give default parameters
     if (start_date === undefined || end_date === undefined) {
-        let today = new Date();
+        const today = new Date();
         betweenDates[1] = today.toISOString().split('T')[0];
 
         today.setMonth(today.getMonth() - 3);
