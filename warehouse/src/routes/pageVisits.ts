@@ -1,5 +1,4 @@
-import express, { json } from 'express';
-import { start } from 'repl';
+import express from 'express';
 import { DatabaseConnection } from '../utils/DB';
 const router = express.Router();
 const CONNECTION = new DatabaseConnection();
@@ -82,8 +81,9 @@ function stringArrayCheck(pages: any): boolean {
     @params: array
     @returns: boolean, if array includes a non string
 */
-function checkDate(date: Date): boolean {
-    return !(date.toString() === "Invalid Date") && !(isNaN(date.getTime())) && !(isNaN(date.valueOf()));
+function checkDate(dateString: string): boolean {
+    const date = new Date(dateString);
+    return (!(isNaN(date.getTime())) || !(isNaN(date.valueOf())) || !(date.toString() === "Invalid Date"));
 }
 
 /* 
@@ -100,29 +100,21 @@ router.get('/pageVisits', async (req, res) => {
     const {
         start_date, end_date
     } = req.body;
+
+    // if start_date exists, take start_date. Otherwise, set it to 3 months before today
+    const startDate= start_date ?? (new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() - 3,
+        new Date().getDate()
+    ).toISOString().split('T')[0]);
+
+    // if end_Date exists, take end_date. Otherwise, set it to today
+    const endDate= end_date ?? (new Date().toISOString().split('T')[0]);
     
-    const startDate = new Date(start_date);
-    const endDate = new Date(end_date);
+    const betweenDates:[string, string] = [startDate, endDate];
 
-    let betweenDates: [string, string] = ["", ""];
-
-    //check if date parameters were given else give default parameters
-    if (start_date === undefined && end_date === undefined) {
-        const today = new Date();
-        betweenDates[1] = today.toISOString().split('T')[0];
-        
-        today.setMonth(today.getMonth() - 3);
-        betweenDates[0] = today.toISOString().split('T')[0];
-    }
- 
-    //check if dates are valid
-    else if (!checkDate(startDate) || !checkDate(endDate)) {
+    if (!checkDate(startDate) || !checkDate(endDate)) {
         return res.status(400).send("Error querying database, check date parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables.");    
-    }
-    else 
-    {
-        //mySQL compatible tuple of dates
-        betweenDates = [startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]];
     }
 
     await CONNECTION?.connect();
