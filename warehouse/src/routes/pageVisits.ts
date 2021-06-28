@@ -18,19 +18,20 @@ const recordPageVisits = function(pages: string[], dates: string[]): Promise<Map
                           AND 
                           Event.EventDate BETWEEN (?) AND (?)
                           GROUP BY Source.SourcePage;`;
-                                         
-        (CONNECTION.connection)?.query(sqlQuery, [pages, dates[0], dates[1]], function (error, results) {
-            if (error != null || results === undefined) { 
+        (CONNECTION.connection)?.query(sqlQuery, [pages, dates[0], dates[1]], function (error, results) 
+        {
+            
+            if (error != null || !results || !results.length) { 
                 reject(error);  
             }
-
-            const pageVisitsMap = new Map();
             
+            const pageVisitsMap = new Map();
+
             //stores the results in a map
             for (const result of results) {
                 pageVisitsMap.set(result.SourcePage, result.count); 
             }
-            
+
             //checks for pages which weren't returned in results and adds them to map with default value of 0
             for (const page of pages) {
                 if (!pageVisitsMap.has(page))
@@ -53,10 +54,10 @@ const getAllDistinctPages = function(dates: string[]): Promise<void> {
                           FROM Source JOIN Event ON Event.EventSource = Source.SourceID 
                           WHERE Source.SourceRepo = "Core-V4 frontend" AND Event.EventDate BETWEEN (?) AND (?);`;
         (CONNECTION.connection)?.query(sqlQuery, [dates[0],dates[1]], function (error, results) {
-            if (error != null || results === undefined) { 
+            if (error != null || !results || !results.length) { 
                 reject(error);  
             }
-
+    
             const pages = results.map((page: any) => page.pagename);
             resolve(pages); 
         });
@@ -68,8 +69,12 @@ const getAllDistinctPages = function(dates: string[]): Promise<void> {
     @param: array
     @returns: boolean, if array includes a non string
 */
-function stringArrayCheck(pages: string[]): boolean {
-    return pages.every(page => (typeof page === "string"));
+function stringArrayCheck(pages: any): boolean {
+    if (!(pages instanceof Array))
+    {   
+        return false;
+    }
+    return pages.every(page => (typeof page === "string" && page.match("\/.*")));
 }
 
 /*
@@ -87,7 +92,6 @@ function checkDate(date: Date): boolean {
     @returns: page visits per page
 */
 router.get('/pageVisits', async (req, res) => {
-    
     //unpack JSON into string array of pages 
     let {
         pages
@@ -103,16 +107,16 @@ router.get('/pageVisits', async (req, res) => {
     let betweenDates: [string, string] = ["", ""];
 
     //check if date parameters were given else give default parameters
-    if (start_date === undefined || end_date === undefined) {
+    if (start_date === undefined && end_date === undefined) {
         const today = new Date();
         betweenDates[1] = today.toISOString().split('T')[0];
-
+        
         today.setMonth(today.getMonth() - 3);
         betweenDates[0] = today.toISOString().split('T')[0];
     }
-
+ 
     //check if dates are valid
-    else if (!checkDate(startDate) && !checkDate(endDate)) {
+    else if (!checkDate(startDate) || !checkDate(endDate)) {
         return res.status(400).send("Error querying database, check date parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables.");    
     }
     else 
@@ -130,6 +134,7 @@ router.get('/pageVisits', async (req, res) => {
             return results;
         })
         .catch(function(error) {
+            CONNECTION.close();
             return res.status(400).send("Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables.");    
         }); 
     }
@@ -137,6 +142,7 @@ router.get('/pageVisits', async (req, res) => {
     //test for bad input types(number, boolean, etc.), test for wrong page name
     else if (!stringArrayCheck(pages))     
     {
+        CONNECTION.close();
         res.status(400).send(
             "Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
         );
@@ -149,6 +155,7 @@ router.get('/pageVisits', async (req, res) => {
         return results as Map<string, number>;
     })
     .catch(function(error) {
+        CONNECTION.close();
         return res.status(503).send("Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables.");    
     })) as Map<string, number>;
 
