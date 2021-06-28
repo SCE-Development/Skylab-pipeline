@@ -74,7 +74,7 @@ function stringArrayCheck(pages: any): boolean {
     {   
         return false;
     }
-    return pages.every(page => (typeof page === "string" && page.match("\/.*")));
+    return pages.every(page => (typeof page === "string" && page.match("/.*")));
 }
 
 /*
