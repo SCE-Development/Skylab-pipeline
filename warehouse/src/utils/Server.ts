@@ -31,6 +31,14 @@ export class ExpressServer {
     this.connection = connection;
     this.app = express();
     this.app.use(cors());
+    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(
+      express.json({
+        // support JSON-encoded request bodies
+        limit: "50mb",
+        strict: true
+      })
+    );
   }
 
   /**

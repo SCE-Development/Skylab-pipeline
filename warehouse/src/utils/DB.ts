@@ -5,6 +5,7 @@ import {
   RDS_USER,
   RDS_PASSWORD,
   RDS_PORT,
+  DATABASE
 } from "../config/constants.json";
 
 const DEFAULT_CONNECTION = {
@@ -12,6 +13,7 @@ const DEFAULT_CONNECTION = {
   user: RDS_USER,
   password: RDS_PASSWORD,
   port: RDS_PORT,
+  database: DATABASE
 };
 
 /**
