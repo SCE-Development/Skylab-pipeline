@@ -20,7 +20,7 @@ INSERT INTO Event (
     '2021-01-01',
     'Discord activities',
     False,
-    'Command call',
+    'Successful command call',
     's!mute'
 );
 
