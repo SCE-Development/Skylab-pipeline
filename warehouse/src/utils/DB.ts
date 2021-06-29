@@ -75,8 +75,8 @@ export class DatabaseConnection {
     // console.log(`DB Connection closed`);
     (this.connection as mysql.Connection).end(done)
   }
-  
-  query(sql: string): Promise<any> {
+
+  query(sql: string): Promise<Array<any>> {
     return new Promise((resolve, reject) => {
       this.connection?.query(sql, (err, results) => {
         if (err) {

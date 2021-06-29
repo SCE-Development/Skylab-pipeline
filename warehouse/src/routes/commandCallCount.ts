@@ -29,15 +29,14 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
             Event
         WHERE (
             EventSource = 22
-            AND ATTR_1 = 'Command call'
+            AND ATTR_1 = 'Successful command call'
             AND ATTR_2 = ${command}
         );
         `;
-
+    
     db.query(sql)
         .then(results => {
-            const rows = results as Array<any>;
-            const count = rows[0].callCount;
+            const count = results[0].callCount;
             res.json({
               "Command": command, 
               "Call Count": count
