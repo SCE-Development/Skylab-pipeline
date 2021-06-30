@@ -10,7 +10,7 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
     return res.status(400).send('Command not found!');
   }
 
-  let command: string = req.body.command as string;
+  const command: string = req.body.command as string;
 
   if (command == null) {
     return res.status(400).send('Command not found!');
