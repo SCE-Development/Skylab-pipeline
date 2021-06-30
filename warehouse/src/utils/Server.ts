@@ -39,6 +39,16 @@ export class ExpressServer {
         strict: true
       })
     );
+    this.app.use(require('body-parser').json());
+    this.app.use((err: any, req: any, res: { status: (arg0: number) => { (): any; new(): any; send: { (arg0: string): void; new(): any; }; }; }, next: () => void) => {
+      if (err) {
+        res.status(400).send('error parsing data');
+      }
+      else {
+        next();
+      }
+    });
+    
   }
 
   /**
