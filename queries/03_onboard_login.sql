@@ -20,6 +20,27 @@ INSERT into Event (
     "Successful"
 );
 
+// insert printing query
+INSERT into Event (
+    EventSource,
+    EventDate,
+    EventTS,
+    EventDescription,
+    EventError,
+    userID,
+    ATTR_1,
+    ATTR_2
+) VALUES (
+	23,
+    '2021-04-20',
+    null,
+    "Printing",
+    False,
+    "u4qdfqGUpsr9JjHC",
+    "Printer 2",
+    6
+);
+
 // select everything from event
 select * from Event
 
