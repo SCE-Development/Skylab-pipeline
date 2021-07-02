@@ -16,9 +16,8 @@ const loginTraffic = function (dates: string[]): Promise<void> {
         if (error != null || !results || !results.length) {
           reject(error);
         }
-        const rows = results as any;
-        const count = rows;
-        resolve(count);
+
+        resolve(results as any);
       }
     );
   });
@@ -29,7 +28,7 @@ function checkDate(dateString: string): boolean {
   return (
     !isNaN(date.getTime()) ||
     !isNaN(date.valueOf()) ||
-    date.toString() === "Invalid Date"
+    !(date.toString() === "Invalid Date")
   );
 }
 
@@ -37,17 +36,28 @@ router.get("/logintraffic", async (req: any, res: any) => {
   await CONNECTION.connect();
   let { startDate, endDate } = req.body;
 
-  if (checkDate(startDate) || checkDate(endDate)) {
-    startDate =
-      startDate ??
-      new Date(
-        new Date().getFullYear(),
-        new Date().getMonth() - 3,
-        new Date().getDate()
-      )
-        .toISOString()
-        .split("T")[0];
-    endDate = endDate ?? new Date().toISOString().split("T")[0];
+  if (startDate > endDate) {
+    return res
+      .status(400)
+      .send("Error querying database, check date parameters.");
+  }
+
+  startDate =
+    startDate ??
+    new Date(
+      new Date().getFullYear(),
+      new Date().getMonth() - 3,
+      new Date().getDate()
+    )
+      .toISOString()
+      .split("T")[0];
+
+  endDate = endDate ?? new Date().toISOString().split("T")[0];
+
+  if (!checkDate(startDate) || !checkDate(endDate)) {
+    return res
+      .status(400)
+      .send("Error querying database, check date parameters.");
   }
 
   const betweenDates: [string, string] = [startDate, endDate];
@@ -63,11 +73,6 @@ router.get("/logintraffic", async (req: any, res: any) => {
     .catch(function (error) {
       return res.status(503).send("Error querying database.");
     });
-
-  res.status(200).send();
-  if (req.query === undefined) {
-    return res.status(400).send("Login traffic undefined.");
-  }
 
   CONNECTION.close();
 });
