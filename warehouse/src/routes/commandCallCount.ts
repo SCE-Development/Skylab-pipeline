@@ -6,15 +6,13 @@ import { DatabaseConnection } from '../utils/DB';
 const router = express.Router();
 
 router.get('/commandCallCount', async (req: Request, res: Response) => {
+  //Check if argument exists
   if (req.body.command == undefined) {
-    return res.status(400).send('Command not found!');
+    return res.status(400).send('Commands not found!');
   }
-
-  const command: string = req.body.command as string;
-
-  if (command == null) {
-    return res.status(400).send('Command not found!');
-  }
+  
+  //argument type is a string array
+  const commands: Array<string> = req.body.command as Array<string>;
 
   const db = new DatabaseConnection();
   await db.connect();
@@ -22,40 +20,32 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
   const sql = 
     `
     SELECT 
-      COUNT(*) AS callCount
+	    ATTR_2 as command, COUNT(*) AS callCount
     FROM 
-      Event
-    WHERE (
-      EventSource = 22
-      AND ATTR_1 = 'Successful command call'
-      AND ATTR_2 = ?
-    );
+	    Event
+    WHERE
+	    EventSource = 22
+	    AND ATTR_1 = 'Successful command call'
+      AND ATTR_2 IN (?)
+		GROUP BY 
+	    ATTR_2;
     `;
+
   
-  db.connection?.query(sql, [command], (error, results) => {
+  db.connection?.query(sql, [commands], (error, result) => {
     if (error) {
       return res.status(500).send(error);
     }
     else {
-      const callCount = results[0].callCount;
-      res.json({
-        "Command": command, 
-        "Call Count": callCount
-      });
+      let commandCallResult: { [key: string]: number } = {};
+      for (let row of result) {
+        commandCallResult[row.command] = row.callCount;
+      }
+      res.json(commandCallResult);
     }
   });
 
-  // db.query(sql)
-  //   .then(results => {
-  //     const count = results[0].callCount;
-  //     res.json({
-  //       "Command": command, 
-  //       "Call Count": count
-  //     });
-  //   })
-  //   .catch (err => {
-  //     return res.status(500).send(err);
-  //   });
+  db.close();
 });
 
 module.exports = router;
