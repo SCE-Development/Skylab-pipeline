@@ -33,3 +33,15 @@ WHERE (
     AND ATTR_1 = 'Command call'
     AND ATTR_2 = 's!mute'
 );
+
+SELECT 
+	ATTR_2 as command, COUNT(*) AS callCount
+FROM 
+	Event
+WHERE
+	EventSource = 22
+	AND ATTR_1 = 'Successful command call'
+    AND ATTR_2 IN
+		('s!mute', 'kick', 'announce everyone')
+GROUP BY 
+	ATTR_2;
