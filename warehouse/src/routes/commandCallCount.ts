@@ -37,8 +37,8 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
       return res.status(500).send(error);
     }
     else {
-      let commandCallResult: { [key: string]: number } = {};
-      for (let row of result) {
+      const commandCallResult: { [key: string]: number } = {};
+      for (const row of result) {
         commandCallResult[row.command] = row.callCount;
       }
       res.json(commandCallResult);
