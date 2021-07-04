@@ -41,7 +41,7 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
       for (const row of result) {
         commandCallResult[row.command] = row.callCount;
       }
-      res.json(commandCallResult);
+      res.status(200).json(commandCallResult);
     }
   });
 
