@@ -84,9 +84,9 @@ function stringArrayCheck(pages: any): boolean {
 }
 
 /*
-    Helper function, checks if all elements in array are strings
-    @params: array
-    @returns: boolean, if array includes a non string
+    Helper function, checks if string is a date
+    @params: dateString string hopefully representing a date
+    @returns: boolean, if string is a date
 */
 function checkDate(dateString: string): boolean {
   const date = new Date(dateString);
