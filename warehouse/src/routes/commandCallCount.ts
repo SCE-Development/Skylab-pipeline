@@ -10,9 +10,25 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
   if (req.body.command == undefined) {
     return res.status(400).send('Commands not found!');
   }
-  
+
   //argument type is a string array
   const commands: Array<string> = req.body.command as Array<string>;
+
+  const { start_date, end_date } = req.body;
+  const startDate = start_date ?? new Date(
+      new Date().getFullYear(),
+      new Date().getMonth() - 3,
+      new Date().getDate()
+    )
+    .toISOString()
+    .split("T")[0];
+  const endDate = end_date ?? new Date()
+    .toISOString()
+    .split("T")[0];
+  
+  if (!isValidDate(startDate) || !isValidDate(endDate)) {
+    return res.status(400).send('Invalid date format!');
+  }
 
   const db = new DatabaseConnection();
   await db.connect();
@@ -26,13 +42,15 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
     WHERE
 	    EventSource = 22
 	    AND ATTR_1 = 'Successful command call'
-      AND ATTR_2 IN (?)
+      AND ATTR_2 
+    IN (?)
+      AND EventDate BETWEEN (?) AND (?)
 		GROUP BY 
 	    ATTR_2;
     `;
 
   
-  db.connection?.query(sql, [commands], (error, result) => {
+  db.connection?.query(sql, [commands, startDate, endDate], (error, result) => {
     if (error) {
       return res.status(500).send(error);
     }
@@ -47,5 +65,15 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
 
   db.close();
 });
+
+function isValidDate(dateString: string): boolean {
+  const dateStringISO = dateString + "T00:00:00.000Z";
+  if (new Date(dateStringISO) as unknown as string !== "Invalid Date" && !isNaN(new Date(dateStringISO) as unknown as number)) {
+    return (dateStringISO == new Date(dateStringISO).toISOString());
+  }
+  else {
+    return false;
+  }
+}
 
 module.exports = router;
