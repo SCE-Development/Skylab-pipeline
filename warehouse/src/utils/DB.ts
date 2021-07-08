@@ -1,4 +1,4 @@
-import mysql, { Types } from "mysql";
+import mysql from "mysql";
 import { resolve } from "path/posix";
 import {
   RDS_HOST_NAME,
