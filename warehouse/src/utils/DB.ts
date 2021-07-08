@@ -5,7 +5,7 @@ import {
   RDS_USER,
   RDS_PASSWORD,
   RDS_PORT,
-  DATABASE
+  DATABASE,
 } from "../config/constants.json";
 
 const DEFAULT_CONNECTION = {
@@ -13,7 +13,7 @@ const DEFAULT_CONNECTION = {
   user: RDS_USER,
   password: RDS_PASSWORD,
   port: RDS_PORT,
-  database: DATABASE
+  database: DATABASE,
 };
 
 /**
@@ -73,7 +73,7 @@ export class DatabaseConnection {
   close(done?: any): void {
     // eslint-disable-next-line
     // console.log(`DB Connection closed`);
-    (this.connection as mysql.Connection).end(done)
+    (this.connection as mysql.Connection).end(done);
   }
 }
 
