@@ -62,13 +62,12 @@ router.get("/logintraffic", async (req: any, res: any) => {
 
   const betweenDates: [string, string] = [startDate, endDate];
 
-  const logins = await loginTraffic(betweenDates)
+  loginTraffic(betweenDates)
     .then(function (results) {
       res.json({
         Date: "Between " + startDate + " and " + endDate,
         "Login Traffic": results,
       });
-      return results;
     })
     .catch(function (error) {
       return res.status(503).send("Error querying database.");
