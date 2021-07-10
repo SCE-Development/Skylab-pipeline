@@ -34,7 +34,7 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
   await db.connect();
 
   const sql = 
-    `
+  `
     SELECT 
 	    ATTR_2 as command, COUNT(*) AS callCount
     FROM 
@@ -47,7 +47,7 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
       AND EventDate BETWEEN (?) AND (?)
 		GROUP BY 
 	    ATTR_2;
-    `;
+  `;
 
   
   db.connection?.query(sql, [commands, startDate, endDate], (error, result) => {

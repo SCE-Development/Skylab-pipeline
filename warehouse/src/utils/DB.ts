@@ -13,7 +13,8 @@ const DEFAULT_CONNECTION = {
   user: RDS_USER,
   password: RDS_PASSWORD,
   port: RDS_PORT,
-  database: DATABASE
+  database: DATABASE,
+  dateStrings: true
 };
 
 /**

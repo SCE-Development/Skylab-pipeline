@@ -24,27 +24,20 @@ INSERT INTO Event (
     's!mute'
 );
 
-SELECT 
-    COUNT(*) AS callCount
-FROM 
-    Event
-WHERE (
-    EventSource = 22
-    AND ATTR_1 = 'Command call'
-    AND ATTR_2 = 's!mute'
+INSERT INTO Event (
+    EventSource,
+    EventDate,
+    EventDescription,
+    EventError,
+    ATTR_1,
+    ATTR_2
+) VALUES (
+    22,
+    '2021-07-01',
+    'Discord activities',
+    False,
+    'Message'
 );
-
-SELECT 
-	ATTR_2 as command, COUNT(*) AS callCount
-FROM 
-	Event
-WHERE
-	EventSource = 22
-	AND ATTR_1 = 'Successful command call'
-    AND ATTR_2 IN
-		('s!mute', 'kick', 'announce everyone')
-GROUP BY 
-	ATTR_2;
 
 SELECT 
   ATTR_2 as command, COUNT(*) AS callCount
@@ -58,3 +51,25 @@ IN (?)
   AND EventDate BETWEEN (?) AND (?)
 GROUP BY 
   ATTR_2;
+
+SELECT 
+  EventDate as messageDate, COUNT(*) AS messageCount
+FROM 
+  Event
+WHERE
+  EventSource = 22
+  AND ATTR_1 = 'Message'
+  AND EventDate = '2021-07-01'
+GROUP BY 
+  EventDate;
+
+SELECT 
+  EventDate as messageDate, COUNT(*) AS messageCount
+FROM 
+  Event
+WHERE
+  EventSource = 22
+  AND ATTR_1 = 'Message'
+  AND EventDate BETWEEN (?) AND (?)
+GROUP BY 
+  EventDate;
