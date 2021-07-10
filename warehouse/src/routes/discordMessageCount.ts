@@ -79,7 +79,7 @@ router.get('/discordMessageCount', async (req: Request, res: Response) => {
         return res.status(500).send(error);
       }
       else {
-        let totalCount: number = 0;
+        let totalCount = 0;
 
         const messageCountResult: { [key: string]: number } = {};
         for (const row of result) {
