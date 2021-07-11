@@ -16,7 +16,7 @@ const printingAnalytics = function (dates: string[]): Promise<void> {
         if (error != null || !results || !results.length) {
           reject(error);
         }
-        let rows = results as any;
+        const rows = results as any;
 
         for (let i = 0; i < rows.length; i += 1) {
           results[i].EventDate = new Date(results[i].EventDate)
