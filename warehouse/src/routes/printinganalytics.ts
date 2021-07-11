@@ -3,11 +3,11 @@ import { DatabaseConnection } from "../utils/DB";
 const router = express.Router();
 const CONNECTION = new DatabaseConnection();
 
-const loginTraffic = function (dates: string[]): Promise<void> {
+const printingAnalytics = function (dates: string[]): Promise<void> {
   return new Promise(function (resolve, reject) {
-    const sqlSelect = `select count(distinct userID) AS DistinctLogins, 
-                      count(userID) AS TotalLogins FROM Event WHERE 
-                      ((Event.EventDate BETWEEN (?) AND (?)) AND EventSource = 21 AND ATTR_1 = "Successful")`;
+    const sqlSelect = `select EventDate, count(distinct userID) AS UsersPrinted, 
+                      sum(ATTR_2) AS PagesPrinted FROM Event WHERE 
+                      ((Event.EventDate BETWEEN (?) AND (?)) AND EventSource = 23) GROUP BY EventDate`;
 
     CONNECTION.connection?.query(
       sqlSelect,
@@ -16,8 +16,14 @@ const loginTraffic = function (dates: string[]): Promise<void> {
         if (error != null || !results || !results.length) {
           reject(error);
         }
+        let rows = results as any;
 
-        resolve(results as any);
+        for (let i = 0; i < rows.length; i += 1) {
+          results[i].EventDate = new Date(results[i].EventDate)
+            .toISOString()
+            .slice(0, 10);
+        }
+        resolve(results);
       }
     );
   });
@@ -32,7 +38,7 @@ function checkDate(dateString: string): boolean {
   );
 }
 
-router.get("/loginTraffic", async (req: any, res: any) => {
+router.get("/printingAnalytics", async (req: any, res: any) => {
   await CONNECTION.connect();
   let { startDate, endDate } = req.body;
 
@@ -52,7 +58,15 @@ router.get("/loginTraffic", async (req: any, res: any) => {
       .toISOString()
       .split("T")[0];
 
-  endDate = endDate ?? new Date().toISOString().split("T")[0];
+  endDate =
+    endDate ??
+    new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate()
+    )
+      .toISOString()
+      .split("T")[0];
 
   if (!checkDate(startDate) || !checkDate(endDate)) {
     return res
@@ -62,11 +76,11 @@ router.get("/loginTraffic", async (req: any, res: any) => {
 
   const betweenDates: [string, string] = [startDate, endDate];
 
-  loginTraffic(betweenDates)
+  printingAnalytics(betweenDates)
     .then(function (results) {
       res.json({
         Date: "Between " + startDate + " and " + endDate,
-        "Login Traffic": results,
+        "Printing Analytics": results,
       });
     })
     .catch(function (error) {
