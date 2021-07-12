@@ -1,7 +1,8 @@
 {
-    "RDShostName": "hostname",
-    "RDSuser": "user",
-    "RDSpassword": "password",
-    "RDSport": "port",
-    "Expressport": 8000
+  "RDS_HOST_NAME": "hostname",
+  "RDS_USER": "user",
+  "RDS_PASSWORD": "password",
+  "RDS_PORT": "port",
+  "DATABASE": "sys",
+  "SERVER_PORT": 8000
 }

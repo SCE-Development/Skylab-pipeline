@@ -1,97 +1,184 @@
-import { CONNECTION } from "..";
-
-const express = require('express');
+import express from "express";
+import { DatabaseConnection } from "../utils/DB";
 const router = express.Router();
+const CONNECTION = new DatabaseConnection();
 
-const recordPageVisits = function(page: string) {
-    return new Promise(function(resolve, reject) {
-        const sqlQuery = `SELECT count(*) as count FROM sys.Source WHERE sys.Source.SourcePage = ?`;
-
-        CONNECTION.query(sqlQuery, page, function (error, results) {
-            if (error != null || results === undefined) { 
-                reject(error)
-            }
-            console.log("results:" + results[0].count);
-            resolve(results[0].count);
-        });
-    });  
-}    
-
-async function queryDB(sqlQuery: string, sqlParam: string) {
-    CONNECTION.query(sqlQuery, sqlParam, function (error, results, fields) {
-        if (error != null) { 
-            throw error;
+/*
+    Queries for amount of page visits per page
+    @param: string array of pages
+    @returns: page visits per page
+*/
+const recordPageVisits = function (
+  pages: string[],
+  dates: string[]
+): Promise<Map<string, number>> {
+  return new Promise(function (resolve, reject) {
+    const sqlQuery = `SELECT Source.SourcePage, count(Event.EventSource) AS count 
+                          FROM Event JOIN Source ON Event.EventSource = Source.SourceID
+                          WHERE Source.SourcePage 
+                          IN (?) 
+                          AND 
+                          Event.EventDate BETWEEN (?) AND (?)
+                          GROUP BY Source.SourcePage;`;
+    CONNECTION.connection?.query(
+      sqlQuery,
+      [pages, dates[0], dates[1]],
+      function (error, results) {
+        if (error != null || !results || !results.length) {
+          reject(error);
         }
-        console.log(results[0].count);
-        //pageVisits = results[0].count;
+
+        const pageVisitsMap = new Map();
+
+        //stores the results in a map
+        for (const result of results) {
+          pageVisitsMap.set(result.SourcePage, result.count);
+        }
+
+        //checks for pages which weren't returned in results and adds them to map with default value of 0
+        for (const page of pages) {
+          if (!pageVisitsMap.has(page)) {
+            pageVisitsMap.set(page, 0);
+          }
+        }
+        resolve(pageVisitsMap);
+      }
+    );
+  });
+};
+
+/*
+    Queries for all the existing distinct pages from frontend
+    @returns: all existing distinct pages from frontend
+*/
+const getAllDistinctPages = function (dates: string[]): Promise<void> {
+  return new Promise(function (resolve, reject) {
+    const sqlQuery = `SELECT DISTINCT Source.SourcePage AS pagename 
+                          FROM Source JOIN Event ON Event.EventSource = Source.SourceID 
+                          WHERE Source.SourceRepo = "Core-V4 frontend" AND Event.EventDate BETWEEN (?) AND (?);`;
+    CONNECTION.connection?.query(
+      sqlQuery,
+      [dates[0], dates[1]],
+      function (error, results) {
+        if (error != null || !results || !results.length) {
+          reject(error);
+        }
+
+        const pages = results.map((page: any) => page.pagename);
+        resolve(pages);
+      }
+    );
+  });
+};
+
+/*
+    Helper function, checks if all elements in array are strings
+    @param: array
+    @returns: boolean, if array includes a non string
+*/
+function stringArrayCheck(pages: any): boolean {
+  if (!(pages instanceof Array)) {
+    return false;
+  }
+  return pages.every((page) => typeof page === "string" && page.match("/.*"));
+}
+
+/*
+    Helper function, checks if string is a date
+    @params: dateString string hopefully representing a date
+    @returns: boolean, if string is a date
+*/
+function checkDate(dateString: string): boolean {
+  const date = new Date(dateString);
+  return (
+    !isNaN(date.getTime()) ||
+    !isNaN(date.valueOf()) ||
+    !(date.toString() === "Invalid Date")
+  );
+}
+
+/* 
+    creates a get API endpoint to use at /pageVisits
+    @params: pages    pages to get page visits for
+    @returns: page visits per page
+*/
+router.get("/pageVisits", async (req, res) => {
+  //unpack JSON into string array of pages
+  let { pages } = req.body;
+
+  const { start_date, end_date } = req.body;
+
+  // if start_date exists, take start_date. Otherwise, set it to 3 months before today
+  const startDate =
+    start_date ??
+    new Date(
+      new Date().getFullYear(),
+      new Date().getMonth() - 3,
+      new Date().getDate()
+    )
+      .toISOString()
+      .split("T")[0];
+
+  // if end_Date exists, take end_date. Otherwise, set it to today
+  const endDate = end_date ?? new Date().toISOString().split("T")[0];
+
+  const betweenDates: [string, string] = [startDate, endDate];
+
+  if (!checkDate(startDate) || !checkDate(endDate)) {
+    return res
+      .status(400)
+      .send(
+        "Error querying database, check date parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
+      );
+  }
+
+  await CONNECTION?.connect();
+
+  //check if req.body exists, else make default parameters all the pages
+  if (pages === undefined) {
+    pages = await getAllDistinctPages(betweenDates)
+      .then(function (results) {
         return results;
-    });
-}
+      })
+      .catch(function (error) {
+        CONNECTION.close();
+        return res
+          .status(400)
+          .send(
+            "Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
+          );
+      });
+  }
 
-//stub database 
-function stubDatabaseWithPageVisits(): void {
-    //stubbed data
-    const page1 = "Event Page";
-    const page2 = "Event Page";
-    const page3 = "Event Page";
-    const page4 = "Home Page";
-    const page5 = "Home Page";
-    const pages = [page1, page2, page3, page4, page5];
-    const sqlQuery = `INSERT INTO sys.Source (sys.Source.SourcePage) 
-                      VALUES(?), (?), (?), (?), (?)`;
+  //test for bad input types(number, boolean, etc.), test for wrong page name
+  else if (!stringArrayCheck(pages)) {
+    CONNECTION.close();
+    res
+      .status(400)
+      .send(
+        "Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
+      );
+    return;
+  }
 
-    try {
-        CONNECTION.query(sqlQuery, pages, function (error, results, fields) {
-        if (error != null) { 
-            throw error;
-        }
-    });
-    } catch (e: unknown) {
-        console.log("Error");
-        return;
-    }
-}
-
-//delete stubdata method after recordpagevisits
-function deStubDatabaseWithPageVisits(): void {
-    //stubbed data
-    const sqlQuery = `DELETE FROM sys.Source WHERE
-                      sys.Source.SourceID > 2`;
-
-    try {
-    CONNECTION.query(sqlQuery, function (error, results, fields) {
-        if (error != null) { 
-            throw error;
-        }
-    });
-    } catch (e: unknown) {
-        console.log("Error");
-        return;
-    }
-}
-
-router.get ('/pageVisits', async (req: any, res: any) => {
-    //stubDatabaseWithPageVisits();
-    var pageVisits = 0;
-    await recordPageVisits("Event Page")
-    .then(function(results) {
-        pageVisits = results as number;
-        console.log(pageVisits);
+  //stores results in a map
+  const pageVisitsMap = (await recordPageVisits(pages, betweenDates)
+    .then(function (results) {
+      return results as Map<string, number>;
     })
-    .catch(function(error) {
-        console.log("Promise rejection error: "+error);
-    });
+    .catch(function (error) {
+      CONNECTION.close();
+      return res
+        .status(503)
+        .send(
+          "Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
+        );
+    })) as Map<string, number>;
 
-    console.log("pgvisits:" + pageVisits);
-    if (pageVisits > 0)
-    {
-        res.status(200).send();
-    }
-    else 
-    {
-        res.status(503).send(); 
-    }
-    //deStubDatabaseWithPageVisits();
-    console.log("pagevisits:" + pageVisits);
+  CONNECTION.close();
+  return res
+    .status(200)
+    .send(JSON.stringify(Array.from(pageVisitsMap.entries())));
 });
-module.exports = router;    //why do i need to do this?
+
+module.exports = router;
