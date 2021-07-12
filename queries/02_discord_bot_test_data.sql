@@ -20,18 +20,8 @@ INSERT INTO Event (
     '2021-01-01',
     'Discord activities',
     False,
-    'Successful command call',
+    'True',
     's!mute'
-);
-
-SELECT 
-    COUNT(*) AS callCount
-FROM 
-    Event
-WHERE (
-    EventSource = 22
-    AND ATTR_1 = 'Command call'
-    AND ATTR_2 = 's!mute'
 );
 
 SELECT 
@@ -40,9 +30,8 @@ FROM
 	Event
 WHERE
 	EventSource = 22
-	AND ATTR_1 = 'Successful command call'
-    AND ATTR_2 IN
-		('s!mute', 'kick', 'announce everyone')
+	AND ATTR_1 = 'True'
+  AND ATTR_2 IN ('s!mute', 'kick', 'announce everyone')
 GROUP BY 
 	ATTR_2;
 
@@ -52,9 +41,8 @@ FROM
   Event
 WHERE
   EventSource = 22
-  AND ATTR_1 = 'Successful command call'
-  AND ATTR_2 
-IN (?)
+  AND ATTR_1 = 'True'
+  AND ATTR_2 IN (?)
   AND EventDate BETWEEN (?) AND (?)
 GROUP BY 
   ATTR_2;

@@ -41,13 +41,12 @@ export class ExpressServer {
     );
     this.app.use((err: any, req: any, res: { status: (arg0: number) => { (): any; new(): any; send: { (arg0: string): void; new(): any; }; }; }, next: () => void) => {
       if (err) {
-        res.status(400).send('error parsing data');
+        res.status(400).send('Error parsing JSON data!');
       }
       else {
         next();
       }
     });
-    
   }
 
   /**

@@ -3,6 +3,16 @@ import { Request, Response } from 'express';
 
 import { DatabaseConnection } from '../utils/DB';
 
+function isValidDate(dateString: string): boolean {
+  const dateStringISO = dateString + "T00:00:00.000Z";
+  if (new Date(dateStringISO) as unknown as string !== "Invalid Date" && !isNaN(new Date(dateStringISO) as unknown as number)) {
+    return (dateStringISO == new Date(dateStringISO).toISOString());
+  }
+  else {
+    return false;
+  }
+}
+
 const router = express.Router();
 
 router.get('/commandCallCount', async (req: Request, res: Response) => {
@@ -11,9 +21,10 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
     return res.status(400).send('Commands not found!');
   }
 
-  //argument type is a string array
+  //Argument type is a string array
   const commands: Array<string> = req.body.command as Array<string>;
 
+  //Get optional arguments
   const { start_date, end_date } = req.body;
   const startDate = start_date ?? new Date(
       new Date().getFullYear(),
@@ -41,9 +52,8 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
 	    Event
     WHERE
 	    EventSource = 22
-	    AND ATTR_1 = 'Successful command call'
-      AND ATTR_2 
-    IN (?)
+	    AND ATTR_1 = 'True'
+      AND ATTR_2 IN (?)
       AND EventDate BETWEEN (?) AND (?)
 		GROUP BY 
 	    ATTR_2;
@@ -65,15 +75,5 @@ router.get('/commandCallCount', async (req: Request, res: Response) => {
 
   db.close();
 });
-
-function isValidDate(dateString: string): boolean {
-  const dateStringISO = dateString + "T00:00:00.000Z";
-  if (new Date(dateStringISO) as unknown as string !== "Invalid Date" && !isNaN(new Date(dateStringISO) as unknown as number)) {
-    return (dateStringISO == new Date(dateStringISO).toISOString());
-  }
-  else {
-    return false;
-  }
-}
 
 module.exports = router;
