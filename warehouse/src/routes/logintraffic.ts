@@ -5,9 +5,9 @@ const CONNECTION = new DatabaseConnection();
 
 const loginTraffic = function (dates: string[]): Promise<void> {
   return new Promise(function (resolve, reject) {
-    const sqlSelect = `select count(distinct userID) AS DistinctLogins, 
-                      count(userID) AS TotalLogins FROM Event WHERE 
-                      ((Event.EventDate BETWEEN (?) AND (?)) AND EventSource = 21 AND ATTR_1 = "Successful")`;
+    const sqlSelect = `select EventDate, count(distinct userID) AS DistinctLogins, 
+    count(userID) AS TotalLogins FROM Event WHERE ((Event.EventDate BETWEEN (?) AND (?)) 
+    AND EventSource = 21 AND ATTR_1 = "Successful") GROUP BY EventDate`;
 
     CONNECTION.connection?.query(
       sqlSelect,
@@ -17,7 +17,14 @@ const loginTraffic = function (dates: string[]): Promise<void> {
           reject(error);
         }
 
-        resolve(results as any);
+        const rows = results as any;
+
+        for (let i = 0; i < rows.length; i += 1) {
+          results[i].EventDate = new Date(results[i].EventDate)
+            .toISOString()
+            .slice(0, 10);
+        }
+        resolve(results);
       }
     );
   });
