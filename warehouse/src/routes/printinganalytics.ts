@@ -40,7 +40,7 @@ function checkDate(dateString: string): boolean {
 
 router.get("/printingAnalytics", async (req: any, res: any) => {
   await CONNECTION.connect();
-  let { start_date, end_date } = req.body;
+  const { start_date, end_date } = req.body;
 
   let startDate = start_date;
   let endDate = end_date;
