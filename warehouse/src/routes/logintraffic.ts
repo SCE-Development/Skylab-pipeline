@@ -41,7 +41,10 @@ function checkDate(dateString: string): boolean {
 
 router.get("/loginTraffic", async (req: any, res: any) => {
   await CONNECTION.connect();
-  let { startDate, endDate } = req.body;
+  let { start_date, end_date } = req.body;
+
+  let startDate = start_date;
+  let endDate = end_date;
 
   if (startDate > endDate) {
     return res
