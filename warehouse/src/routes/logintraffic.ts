@@ -18,12 +18,16 @@ const loginTraffic = function (dates: string[]): Promise<void> {
         }
 
         const rows = results as any;
-
-        for (let i = 0; i < rows.length; i += 1) {
-          results[i].EventDate = new Date(results[i].EventDate)
-            .toISOString()
-            .slice(0, 10);
+        try {
+          for (let i = 0; i < results.length; i += 1) {
+            results[i].EventDate = new Date(results[i].EventDate)
+              .toISOString()
+              .slice(0, 10);
+          }
+        } catch {
+          results = null;
         }
+
         resolve(results);
       }
     );
@@ -39,21 +43,18 @@ function checkDate(dateString: string): boolean {
   );
 }
 
-router.get("/loginTraffic", async (req: any, res: any) => {
+router.post("/loginTraffic", async (req: any, res: any) => {
   await CONNECTION.connect();
-  const { start_date, end_date } = req.body;
+  let { start_date, end_date } = req.body.data;
 
-  let startDate = start_date;
-  let endDate = end_date;
-
-  if (startDate > endDate) {
+  if (start_date > end_date) {
     return res
       .status(400)
       .send("Error querying database, check date parameters.");
   }
 
-  startDate =
-    startDate ??
+  start_date =
+    start_date ??
     new Date(
       new Date().getFullYear(),
       new Date().getMonth() - 3,
@@ -62,21 +63,21 @@ router.get("/loginTraffic", async (req: any, res: any) => {
       .toISOString()
       .split("T")[0];
 
-  endDate = endDate ?? new Date().toISOString().split("T")[0];
+  end_date = end_date ?? new Date().toISOString().split("T")[0];
 
-  if (!checkDate(startDate) || !checkDate(endDate)) {
+  if (!checkDate(start_date) || !checkDate(end_date)) {
     return res
       .status(400)
       .send("Error querying database, check date parameters.");
   }
 
-  const betweenDates: [string, string] = [startDate, endDate];
+  const betweenDates: [string, string] = [start_date, end_date];
 
   loginTraffic(betweenDates)
     .then(function (results) {
       res.json({
-        Date: "Between " + startDate + " and " + endDate,
-        "Login Traffic": results,
+        Date: "Between " + start_date + " and " + end_date,
+        Data: results,
       });
     })
     .catch(function (error) {
