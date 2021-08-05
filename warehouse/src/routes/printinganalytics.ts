@@ -85,7 +85,7 @@ router.post("/printingAnalytics", async (req: any, res: any) => {
     .then(function (results) {
       res.json({
         Date: "Between " + start_date + " and " + end_date,
-        "Printing Analytics": results,
+        Data: results,
       });
     })
     .catch(function (error) {
