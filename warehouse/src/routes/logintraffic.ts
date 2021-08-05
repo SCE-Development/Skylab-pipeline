@@ -53,6 +53,7 @@ router.post("/loginTraffic", async (req: any, res: any) => {
       .send("Error querying database, check date parameters.");
   }
 
+
   start_date =
     start_date ??
     new Date(
