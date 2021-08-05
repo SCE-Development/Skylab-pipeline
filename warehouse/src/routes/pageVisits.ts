@@ -24,12 +24,12 @@ const recordPageVisits = function (
       sqlQuery,
       [pages, dates[0], dates[1]],
       function (error, results) {
-        if (error != null || !results || !results.length) {
-          reject(error);
+        if (error != null || !results) {
+          return reject(error);
         }
 
         const pageVisitsMap = new Map();
-
+    
         //stores the results in a map
         for (const result of results) {
           pageVisitsMap.set(result.SourcePage, result.count);
@@ -61,9 +61,9 @@ const getAllDistinctPages = function (dates: string[]): Promise<void> {
       [dates[0], dates[1]],
       function (error, results) {
         if (error != null || !results || !results.length) {
-          reject(error);
+          return reject(error);
         }
-
+        
         const pages = results.map((page: any) => page.pagename);
         resolve(pages);
       }
@@ -84,16 +84,16 @@ function stringArrayCheck(pages: any): boolean {
 }
 
 /*
-    Helper function, checks if string is a date
-    @params: dateString string hopefully representing a date
-    @returns: boolean, if string is a date
+    Helper function, checks if all elements in array are strings
+    @params: array
+    @returns: boolean, if array includes a non string
 */
 function checkDate(dateString: string): boolean {
   const date = new Date(dateString);
   return (
     !isNaN(date.getTime()) ||
     !isNaN(date.valueOf()) ||
-    !(date.toString() === "Invalid Date")
+    !(date.toString() === "Invalid Date") 
   );
 }
 
@@ -140,25 +140,29 @@ router.get("/pageVisits", async (req, res) => {
       .then(function (results) {
         return results;
       })
-      .catch(function (error) {
-        CONNECTION.close();
+      .catch(function(error) {
+        return undefined;
+      });
+
+    //if getAllDistinctPages failed
+    if (pages === undefined) {
+      CONNECTION.close();
         return res
           .status(400)
           .send(
-            "Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
+            "Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Core-v4-Analytics-Usage."
           );
-      });
+    }
   }
 
   //test for bad input types(number, boolean, etc.), test for wrong page name
   else if (!stringArrayCheck(pages)) {
     CONNECTION.close();
-    res
+    return res
       .status(400)
       .send(
-        "Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
+        "Error querying database, check pages parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Core-v4-Analytics-Usage."
       );
-    return;
   }
 
   //stores results in a map
@@ -167,13 +171,18 @@ router.get("/pageVisits", async (req, res) => {
       return results as Map<string, number>;
     })
     .catch(function (error) {
+        return undefined;
+    })) as Map<string, number>;
+    
+    //if recordPageVisits failed
+    if (pageVisitsMap === undefined) {
       CONNECTION.close();
       return res
-        .status(503)
-        .send(
-          "Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Source-tables."
-        );
-    })) as Map<string, number>;
+      .status(503)
+      .send(
+        "Error querying database, check parameters. Refer to https://github.com/SCE-Development/Skylab-pipeline/wiki/Core-v4-Analytics-Usage."
+      );
+    }
 
   CONNECTION.close();
   return res
@@ -182,3 +191,4 @@ router.get("/pageVisits", async (req, res) => {
 });
 
 module.exports = router;
+
