@@ -15,7 +15,7 @@ function isValidDate(dateString: string): boolean {
 
 const router = express.Router();
 
-router.get('/commandCallStats', async (req: Request, res: Response) => {
+router.post('/commandCallStats', async (req: Request, res: Response) => {
 
   //Get optional arguments
   const { start_date, end_date } = req.body;
