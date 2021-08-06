@@ -15,7 +15,7 @@ function isValidDate(dateString: string): boolean {
 
 const router = express.Router();
 
-router.get('/commandCallCount', async (req: Request, res: Response) => {
+router.post('/commandCallCount', async (req: Request, res: Response) => {
   //Check if argument exists
   if (req.body.command == undefined) {
     return res.status(400).send('Commands not found!');
