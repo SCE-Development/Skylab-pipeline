@@ -45,14 +45,13 @@ function checkDate(dateString: string): boolean {
 
 router.post("/loginTraffic", async (req: any, res: any) => {
   await CONNECTION.connect();
-  let { start_date, end_date } = req.body.data;
+  let { start_date, end_date } = req.body;
 
   if (start_date > end_date) {
     return res
       .status(400)
       .send("Error querying database, check date parameters.");
   }
-
 
   start_date =
     start_date ??
