@@ -15,14 +15,7 @@ function isValidDate(dateString: string): boolean {
 
 const router = express.Router();
 
-router.post('/commandCallCount', async (req: Request, res: Response) => {
-  //Check if argument exists
-  if (req.body.command == undefined) {
-    return res.status(400).send('Commands not found!');
-  }
-
-  //Argument type is a string array
-  const commands: Array<string> = req.body.command as Array<string>;
+router.post('/commandCallStats', async (req: Request, res: Response) => {
 
   //Get optional arguments
   const { start_date, end_date } = req.body;
@@ -47,28 +40,34 @@ router.post('/commandCallCount', async (req: Request, res: Response) => {
   const sql = 
     `
     SELECT 
-	    ATTR_2 as command, COUNT(*) AS callCount
+      DATE_FORMAT(EventDate, '%Y-%m-%d') as date,
+      COUNT( CASE WHEN ATTR_1 = 'true' THEN 1 END ) AS successCount,
+      COUNT( CASE WHEN ATTR_1 = 'false' THEN 1 END ) AS failCount
     FROM 
-	    Event
+      Event
     WHERE
-	    EventSource = 22
-	    AND ATTR_1 = 'True'
-      AND ATTR_2 IN (?)
+      EventSource = 22
       AND EventDate BETWEEN (?) AND (?)
-		GROUP BY 
-	    ATTR_2;
+    GROUP BY 
+      EventDate;
     `;
 
   
-  db.connection?.query(sql, [commands, startDate, endDate], (error, result) => {
+  db.connection?.query(sql, [startDate, endDate], (error, result) => {
     if (error) {
       return res.status(500).send(error);
     }
     else {
-      const commandCallResult: { [key: string]: number } = {};
+      const commandCallResult: { [key: string]: any[] } = {};
+      const stats = [];
       for (const row of result) {
-        commandCallResult[row.command] = row.callCount;
+        stats.push({
+          eventDate: row.date,
+          success: row.successCount,
+          fail: row.failCount
+        })
       }
+      commandCallResult["stats"] = stats;
       res.status(200).json(commandCallResult);
     }
   });
